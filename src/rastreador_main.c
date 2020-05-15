@@ -20,7 +20,6 @@ int main(int argc, char *argv[]) {
 	while (1) {
 	   int option_index = 0;
 	   static struct option long_options[] = {
-		   {"Prog",  required_argument, 0, 0},
 		   {"",  required_argument, 0, 'v'},
 		   {"",  required_argument, 0, 'V'},
 		   {0,         0,                 0,  0 }
@@ -33,29 +32,33 @@ int main(int argc, char *argv[]) {
 
 	   switch (c) {	   
 	   case 'v':
-		   printf("option v with value '%s'\n", optarg);
+		   printf("option v with prog '%s'\n", optarg);
 		   arg_prog = optarg;
 		   break;
 
 	   case 'V':
-		   printf("option V with value '%s'\n", optarg);
+		   printf("option V with prog '%s'\n", optarg);
 		   arg_prog = optarg;
 		   break;
 
 	   case '?':
+		   printf("option ?'\n");
 		   break;
 
 	   default:
 		   printf("use ./rastreador [-v|-V] Prog [opciones prog] \n");
 	   }
 	}
+	
+	printf("  argc %d  optind %d \n",argc,optind);
+	
 	if (optind < argc) {
-	   printf("opciones prog: ");
-	   while (optind < argc)
-		   printf("%s ", argv[optind++]);
+	  // printf("opciones prog: ");
+	    while (optind < argc)
+			printf("%s ", argv[optind++]);
 	   printf("\n");
 	}	
-	
+	printf("running %s argc %d  optind %d \n",arg_prog,argc,optind);
 	p_trace_request(1, &arg_prog);
 
 	exit(EXIT_SUCCESS);

@@ -1,6 +1,12 @@
 #ifndef TAREA2_UTILS_H
 #define TAREA2_UTILS_H
 
-int wait_for_syscall(pid_t child);
+#define MAX_SYSCALL_NUM 500
+
+struct syscall_info {
+    int nargs;
+    const char *name;
+    
+};
 
 #endif //TAREA2_UTILS_H
