@@ -8,12 +8,15 @@ LDFLAGS   := -lm -lpthread -lrt
 INC_FLAGS := -I$(INCLUDE_DIR)
 
 .PHONY: all
-all: $(BUILD_DIR) $(BUILD_DIR)/rastreador
+all: $(BUILD_DIR) $(BUILD_DIR)/rastreador $(BUILD_DIR)/test
 
 $(BUILD_DIR)/%.o: $(SOURCE_DIR)/%.c
 	$(CC) -c -o $@ $< $(CFLAGS) $(INC_FLAGS)
 
-$(BUILD_DIR)/rastreador: $(BUILD_DIR)/rastreador.o $(BUILD_DIR)/rastreador_main.o $(BUILD_DIR)/utils.o
+$(BUILD_DIR)/rastreador: $(BUILD_DIR)/rastreador.o $(BUILD_DIR)/rastreador_main.o
+	$(CC) -o $@ $^ $(LDFLAGS)
+
+$(BUILD_DIR)/test: $(BUILD_DIR)/test.o $(BUILD_DIR)/test_main.o
 	$(CC) -o $@ $^ $(LDFLAGS)
 
 $(BUILD_DIR):
