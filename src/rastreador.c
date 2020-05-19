@@ -300,6 +300,7 @@ int execute_parent_process(pid_t child_process_id, bool pause){
             syscall_reg.system_call_return_value = 0;
             print_system_call(&syscall_reg);
             printf("Ejecución del programa terminada satisfactoriamente.\n");
+            push_system_call_usage(system_call_usage_log, syscall_reg.system_call_number);
             print_system_call_usage(system_call_usage_log);
             clean_system_call_usage(system_call_usage_log);
             return SUCCESS;
