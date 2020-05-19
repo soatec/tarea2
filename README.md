@@ -59,8 +59,8 @@ sobre los *system calls* del programa test:
 ![Alt text](docs/ejemplo.png?raw=true "Title")
 
 Los *system calls* de *write* con "Hola, mundo" se pueden observar al final de la ejecución. En donde se muestra que 
-el parámetro fd es 1 (stdout), buf es -303652769 que corresponde a la dirección 0xEDE6A05F y count es 12, el tamaño del 
-string "Hola, mundo\n". El valor retornado es 12, que es la cantidad de *bytes* escrita con éxito.
+el parámetro fd es 1 (stdout), buf es -303652769 que corresponde a la dirección 0xEDE6A05F y count es 12 (el tamaño del 
+string "Hola, mundo\n"). El valor retornado es 12, que es la cantidad de *bytes* escrita con éxito.
 
 ![Alt text](docs/ejemplo_2.png?raw=true "Title")
 
