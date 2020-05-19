@@ -28,7 +28,7 @@ programa se puede utilizar.
 ## Programa de prueba
 
 Este programa realiza el syscall write (`ssize_t write(int fd, const void *buf, size_t count)`). Escribe una cantidad 
-de veces determinado por el usuario en el *file descriptor* 1 (standard output) un *string* determinado por el 
+de veces determinada por el usuario en el *file descriptor* 1 (standard output) un *string* determinado por el 
 usuario (más un caracter de cambio de línea).
 
 1. En la raiz de la tarea, ejecute la regla make:
@@ -58,9 +58,14 @@ sobre los *system calls* del programa test:
 
 ![Alt text](docs/ejemplo.png?raw=true "Title")
 
-Los *system calls* de *write* con "Hola, mundo" se pueden observar al final de la ejecución. En donde se muestra que 
-el parámetro fd es 1 (stdout), buf es -303652769 que corresponde a la dirección 0xEDE6A05F y count es 12 (el tamaño del 
-string "Hola, mundo\n"). El valor retornado es 12, que es la cantidad de *bytes* escrita con éxito.
+Los *system calls* de *write* con "Hola, mundo" se pueden observar al final de la ejecución. El *system call* muestra
+la siguiente información:
+* *System call* número 1
+* Nombre: sys_write
+* Parámetro 1: fd es 1 (stdout).
+* Parámetro 2: buf es -303652769 que corresponde a la dirección 0xEDE6A05F.
+* Parámetro 2: count es 12 (el tamaño del string "Hola, mundo\n"). 
+* Valor de retorno: el valor retornado es 12, que es la cantidad de *bytes* escrita con éxito.
 
 ![Alt text](docs/ejemplo_2.png?raw=true "Title")
 

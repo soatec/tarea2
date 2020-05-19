@@ -1,6 +1,8 @@
 #ifndef TAREA2_CONSTANTS_H
 #define TAREA2_CONSTANTS_H
 
+#include <sys/reg.h>
+
 // Defines
 #define	SUCCESS 0
 #define	FAILURE 1
@@ -8,6 +10,7 @@
 
 #define ARGS_QUANTITY 6
 #ifdef __x86_64__
+#define VALID_ARCH 1
 #define SYSCALLS_QUANTITY 336
 #define REG_SYSCALL_NUMBER  ORIG_RAX
 #define REG_SYSCALL_RETURN RAX
@@ -18,6 +21,8 @@
 #define REG_SYSCALL_ARG5 R8
 #define REG_SYSCALL_ARG6 R9
 #else
+#ifdef __i386__
+#define VALID_ARCH 1
 #define SYSCALLS_QUANTITY 191
 #define REG_SYSCALL_NUMBER  ORIG_EAX
 #define REG_SYSCALL_RETURN EAX
@@ -27,6 +32,18 @@
 #define REG_SYSCALL_ARG4 ESI
 #define REG_SYSCALL_ARG5 EDI
 #define REG_SYSCALL_ARG6 EBP
+#else
+#define VALID_ARCH 0
+#define SYSCALLS_QUANTITY 0
+#define REG_SYSCALL_NUMBER  0
+#define REG_SYSCALL_RETURN 0
+#define REG_SYSCALL_ARG1 0
+#define REG_SYSCALL_ARG2 0
+#define REG_SYSCALL_ARG3 0
+#define REG_SYSCALL_ARG4 0
+#define REG_SYSCALL_ARG5 0
+#define REG_SYSCALL_ARG6 0
+#endif
 #endif
 
 // Structs
@@ -381,6 +398,7 @@ const system_call_information syscalls_info[SYSCALLS_QUANTITY] = {
         {"pkey_mprotect", {"", "", "", "", "", ""}}
 };
 #else
+#ifdef __i386__
 const system_call_information syscalls_info[SYSCALLS_QUANTITY] = {
         {"",{"","","","","",""}},
         {"sys_exit",{"int","","","","", ""}},
@@ -574,6 +592,9 @@ const system_call_information syscalls_info[SYSCALLS_QUANTITY] = {
         {"",{"","","","","",""}},
         {"sys_vfork",{"struct pt_regs","","","","", ""}}
 };
+#else
+const system_call_information syscalls_info[SYSCALLS_QUANTITY];
+#endif
 #endif
 
 #endif //TAREA2_CONSTANTS_H

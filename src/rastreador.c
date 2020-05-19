@@ -5,13 +5,11 @@
 #include <errno.h>
 #include <sys/ptrace.h>
 #include <sys/wait.h>
-#include <sys/reg.h>
 #include <sys/types.h>
 #include <stdbool.h>
 #include <termios.h>
 #include "rastreador.h"
 #include "constants.h"
-
 // Structures
 
 /*
@@ -153,7 +151,7 @@ int get_system_call_number(system_call_data *syscall_reg,
  */
 void print_system_call(system_call_data *syscall_reg) {
     if (syscall_reg->system_call_number >= SYSCALLS_QUANTITY){
-        fprintf(stderr, "Error recuperando la información del system call %d.\n",
+        fprintf(stderr, "Error recuperando la información del system call %ld.\n",
                 syscall_reg->system_call_number);
         return;
     }
@@ -222,6 +220,10 @@ int execute_parent_process(pid_t child_process_id, bool pause){
  * to be traced and father process traces it.
  */
 int system_call_tracer_execute(char **argv, bool pause){
+    if (VALID_ARCH == 0) {
+        fprintf(stderr, "La arquitectura actual no es soportada. Únicamente se soporta x86_64 e i386\n");
+        return FAILURE;
+    }
     pid_t fork_return = fork();
     if (fork_return == 0) {
         return execute_child_process(argv);
