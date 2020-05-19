@@ -21,7 +21,99 @@ typedef struct system_call_data {
     long int system_call_args[ARGS_QUANTITY];
 } system_call_data;
 
+/*
+ * Hold system call usage count
+ */
+typedef struct system_call_usage {
+    long int system_call_number;
+    long int system_call_usage_count;
+    struct system_call_usage* next;
+} system_call_usage;
+
 // Private functions
+
+// Helper functions for system_call_usage linked list
+/*
+ * Init system_call_usage linked list
+ */
+system_call_usage * init_system_call_usage() {
+    system_call_usage * head = NULL;
+    head = (system_call_usage *) malloc(sizeof(system_call_usage));
+    head->system_call_number = -1;
+    head->system_call_usage_count = 0;
+    head->next = NULL;
+    return head;
+}
+
+/*
+ * Print system call usage count log
+ */
+void print_system_call_usage(system_call_usage * head) {
+    system_call_usage * current = head;
+
+    while (current != NULL) {
+
+        if (current->system_call_number >= SYSCALLS_QUANTITY){
+            fprintf(stderr, "Error recuperando la información del system call %ld.\n",
+                    current->system_call_number);
+            return;
+        }
+        fprintf(stdout, "Se usaron: %ld"
+                        "\tSyscall (%ld): %s\n",
+                current->system_call_usage_count,
+                current->system_call_number,
+                syscalls_info[current->system_call_number].system_call_name);
+
+        current = current->next;
+    }
+}
+
+/*
+ * Add system call count to log
+ */
+void push_system_call_usage(system_call_usage * head, long int in_system_call_number) {
+    if (head->system_call_number == -1) {
+        head->system_call_number = in_system_call_number;
+        head->system_call_usage_count = 1;
+        head->next = NULL;
+        return;
+    }
+
+    system_call_usage * current = head;
+
+    while (current->next != NULL) {
+        if (current->system_call_number == in_system_call_number) {
+            current->system_call_usage_count++;
+            return;
+        }
+        current = current->next;
+    }
+    if (current->system_call_number == in_system_call_number) {
+        current->system_call_usage_count++;
+        return;
+    }
+
+    current->next = (system_call_usage *) malloc(sizeof(system_call_usage));
+    current->next->system_call_number = in_system_call_number;
+    current->next->system_call_usage_count = 1;
+    current->next->next = NULL;
+}
+
+/*
+ * Clean system_call_usage linked list
+ */
+void clean_system_call_usage(system_call_usage * head) { 
+    system_call_usage * current = head;
+    system_call_usage * next;
+  
+    while (current != NULL) { 
+       next = current->next;
+       free(current);
+       current = next;
+    }
+
+    head = NULL; 
+} 
 
 // Functions for child process
 /*
@@ -179,6 +271,7 @@ void print_system_call(system_call_data *syscall_reg) {
 int execute_parent_process(pid_t child_process_id, bool pause){
     int status = -1;
     int continue_child_status = -1;
+    system_call_usage * system_call_usage_log = init_system_call_usage();
     system_call_data syscall_reg;
     waitpid(child_process_id, &status, 0);
     ptrace(PTRACE_SETOPTIONS, child_process_id, 0, PTRACE_O_TRACESYSGOOD);
@@ -207,6 +300,8 @@ int execute_parent_process(pid_t child_process_id, bool pause){
             syscall_reg.system_call_return_value = 0;
             print_system_call(&syscall_reg);
             printf("Ejecución del programa terminada satisfactoriamente.\n");
+            print_system_call_usage(system_call_usage_log);
+            clean_system_call_usage(system_call_usage_log);
             return SUCCESS;
         }
 
@@ -215,6 +310,7 @@ int execute_parent_process(pid_t child_process_id, bool pause){
             break;
         }
         print_system_call(&syscall_reg);
+        push_system_call_usage(system_call_usage_log, syscall_reg.system_call_number);
     }
     return FAILURE;
 }
