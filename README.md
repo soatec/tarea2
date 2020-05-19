@@ -19,6 +19,10 @@ En donde,
  
 * ***V*** es idéntico a la opción -v, pero realiza una pausa hasta que el usuario presione cualquier tecla para 
 continuar con la ejecución de Prog. Las pausas se realizan antes de ejecutar el *system call*.
+
+* ***Prog*** es el programa al que se le rastreará sus *system calls*.
+
+* ***opciones de Prog*** son los argumentos de Prog.
  
 Es necesario que el usuario use solo una de las opciones -v o -V.
 
