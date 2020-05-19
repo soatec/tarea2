@@ -9,28 +9,28 @@
 int main(int argc, char *argv[]) {
     int opt;
     int status;
+    int quantity_arguments_parsed = 0;
     bool pause = false;
-    char *prog =  NULL;
     char *prog_args[argc - 1];
     memcpy(prog_args, &argv[2], (argc - 1) * sizeof(char*));
 
-    while ((opt = getopt(argc, argv, ":v:V:")) != -1) {
+    while ((opt = getopt(argc, argv, ":v::V::")) != -1) {
         switch (opt) {
             case 'V':
                 pause = true;
             case 'v':
-                prog = optarg;
+                quantity_arguments_parsed++;
                 break;
             case '?':
                 break;
             default:
-                fprintf(stderr, "Uso: %s [-v -V] Prog [opciones de Prog]\n", argv[0]);
+                fprintf(stderr, "Uso: %s [-v | -V] Prog [opciones de Prog]\n", argv[0]);
                 return EXIT_FAILURE;
         }
     }
 
-    if (prog == NULL) {
-        fprintf(stderr, "Prog es obligatorio\n");
+    if (quantity_arguments_parsed != 1){
+        fprintf(stderr, "Verifique las opciones -v y -V.\n");
         return EXIT_FAILURE;
     }
 
