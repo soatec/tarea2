@@ -22,13 +22,14 @@ continuar con la ejecución de Prog. Las pausas se realizan antes de ejecutar el
  
 Es necesario que el usuario use solo una de las opciones -v o -V.
 
-Esta tarea incluye un programa sencillo para usarse como prueba del rastreador de *System Calls*, pero cualquier otro
+Esta tarea incluye un programa sencillo para usarlo como prueba del rastreador de *System Calls*, pero cualquier otro
 programa se puede utilizar.
 
 ## Programa de prueba
 
-Este programa realiza el syscall write. Escribe una cantidad de veces determinado por el usuario en el 
-*file descriptor* 1 (standard output) un *string* determinado por el usuario (más un caracter de cambio de línea).
+Este programa realiza el syscall write (`ssize_t write(int fd, const void *buf, size_t count)`). Escribe una cantidad 
+de veces determinado por el usuario en el *file descriptor* 1 (standard output) un *string* determinado por el 
+usuario (más un caracter de cambio de línea).
 
 1. En la raiz de la tarea, ejecute la regla make:
 ```
@@ -58,8 +59,8 @@ sobre los *system calls* del programa test:
 ![Alt text](docs/ejemplo.png?raw=true "Title")
 
 Los *system calls* de *write* con "Hola, mundo" se pueden observar al final de la ejecución. En donde se muestra que 
-el parámetro de fd es 1 (stdout), buf es -303652769 que corresponde a la dirección 0xEDE6A05F y count es 12, el tamaño del 
-string "Hola, mundo\n":
+el parámetro fd es 1 (stdout), buf es -303652769 que corresponde a la dirección 0xEDE6A05F y count es 12, el tamaño del 
+string "Hola, mundo\n". El valor retornado es 12, que es la cantidad de *bytes* escrita con éxito.
 
 ![Alt text](docs/ejemplo_2.png?raw=true "Title")
 
