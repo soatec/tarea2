@@ -189,26 +189,32 @@ int execute_parent_process(pid_t child_process_id, bool pause){
         }
         status = get_system_call_number(&syscall_reg, PTRACE_PEEKUSER, child_process_id);
         if (status == FAILURE){
+            printf("a\n");
             break;
         }
         status = get_system_call_return_args(&syscall_reg, PTRACE_PEEKUSER, child_process_id);
         if (status == FAILURE){
+            printf("b\n");
             break;
         }
+
         continue_child_status = continue_child_process_execution(child_process_id, false);
         if (continue_child_status == FAILURE) {
             break;
         }
+
+        if (continue_child_status == SUCCESS) {
+            syscall_reg.system_call_return_value = 0;
+            print_system_call(&syscall_reg);
+            printf("Ejecución del programa terminada satisfactoriamente.\n");
+            return SUCCESS;
+        }
+
         status = get_system_call_return_value(&syscall_reg, PTRACE_PEEKUSER, child_process_id);
         if (status == FAILURE){
             break;
         }
         print_system_call(&syscall_reg);
-
-        if (continue_child_status == SUCCESS) {
-            printf("Ejecución del programa terminada satisfactoriamente.\n");
-            return SUCCESS;
-        }
     }
     return FAILURE;
 }
