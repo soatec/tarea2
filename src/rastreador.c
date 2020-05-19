@@ -13,19 +13,44 @@
 // Structures
 
 /*
- *
+ * Hold system call information
  */
 typedef struct system_call_data {
     int system_call_number;
+    int system_call_value_returned;
     const char *system_call_name;
 } system_call_data;
 
 // Private functions
 
+// Functions for child process
+/*
+ * Execute Prog and indicates that wants to be traced and stops
+ */
+int execute_child_process(char **argv){
+    int err_status;
+    printf("Corriendo el programa %s:\n", argv[0]);
+    err_status = ptrace(PTRACE_TRACEME);
+    if (err_status == -1) {
+        fprintf(stderr, "Error ejecutando ptrace con PTRACE_TRACEME. (Errno %d: %s)\n",
+                errno, strerror(errno));
+        return EXIT_FAILURE;
+    }
+
+    err_status = kill(getpid(), SIGSTOP);
+    if (err_status == -1) {
+        fprintf(stderr, "Error ejecutando kill con SIGSTOP. (Errno %d: %s)\n",
+                errno, strerror(errno));
+        return EXIT_FAILURE;
+    }
+    return execvp(argv[0], argv);
+}
+
+// Functions for parent process
 /*
  * Child process runs until a system call is initialized or finished
  */
-int wait_for_syscall(pid_t child_process_id, bool pause) {
+int continue_child_process_exection(pid_t child_process_id, bool pause) {
     int status;
     int error_status;
     while (true) {
@@ -53,86 +78,98 @@ int wait_for_syscall(pid_t child_process_id, bool pause) {
 }
 
 /*
- * Declare that wants to be traced and then stops
+ * Get system value returned from last call number execute in
+ * process child_process_id
  */
-int do_child(char **argv){
-    printf("Corriendo el programa %s:\n", argv[0]);
-    ptrace(PTRACE_TRACEME);
-    kill(getpid(), SIGSTOP);
-    return execvp(argv[0], argv);
+int get_syscall_value_returned(system_call_data *syscall_reg, enum __ptrace_request request, pid_t child){
+	int rax_content;
+
+    rax_content = ptrace(request, child, sizeof(long) * RAX);
+    if (rax_content == -1) {
+        fprintf(stderr, "Error ejecutando ptrace al leer RAX. (Errno %d: %s)\n",
+                errno, strerror(errno));
+        return EXIT_FAILURE;
+    }
+
+    syscall_reg->system_call_value_returned = rax_content;
+	return EXIT_SUCCESS;
 }
 
 /*
- *
+ * Get system last call number execute in process child_process_id
  */
-int get_syscall_reg(system_call_data *syscall_reg, enum __ptrace_request request, pid_t child){
-	int system_call_numer = -1;
-	char *syscall_name = NULL;
+int get_syscall_number(system_call_data *syscall_reg,
+        enum __ptrace_request request, pid_t child_process_id){
+    int orig_rax_content;
+    char *syscall_name = NULL;
 
-    system_call_numer = ptrace(request, child, sizeof(long) * ORIG_RAX);
-    if (system_call_numer == -1) {
-        fprintf(stderr, "Error ejecutando fork. (Errno %d: %s)\n",
+    orig_rax_content = ptrace(request, child_process_id, sizeof(long) * ORIG_RAX);
+    if (orig_rax_content == -1) {
+        fprintf(stderr, "Error ejecutando ptrace al leer ORIG_RAX. (Errno %d: %s)\n",
                 errno, strerror(errno));
         return EXIT_FAILURE;
     }
 
     syscall_name = "Nombre de system call";
-    syscall_reg->system_call_number = system_call_numer;
+    syscall_reg->system_call_number = orig_rax_content;
     syscall_reg->system_call_name = syscall_name;
-	return EXIT_SUCCESS;
+    return EXIT_SUCCESS;
 }
 
 /*
- *
+ * Print information for the system call in syscall_reg argument
  */
-void print_syscall_(system_call_data syscall_reg) {
-    fprintf(stderr, "Syscall (%d): %s\n",
-            syscall_reg.system_call_number, syscall_reg.system_call_name);
+void print_system_call(system_call_data *syscall_reg) {
+    fprintf(stderr, "Syscall (%d): %s\n    Returned value: %d\n",
+            syscall_reg->system_call_number,
+            syscall_reg->system_call_name,
+            syscall_reg->system_call_value_returned);
 }
 
 /*
  * Make child_process_id continue to only stop    a SysCall
  * then waits for the child_process_id
  */
-int do_trace(pid_t child_process_id, bool pause){
+int execute_parent_process(pid_t child_process_id, bool pause){
 	int status;
-	int ptrace_requested_data;
 	system_call_data syscall_reg;
 	waitpid(child_process_id, &status, 0);
 	ptrace(PTRACE_SETOPTIONS, child_process_id, 0, PTRACE_O_TRACESYSGOOD);
 	while(1) {
-		if (wait_for_syscall(child_process_id, pause) != 0){
+		if (continue_child_process_exection(child_process_id, pause) != 0){
             break;
 		}
-        status = get_syscall_reg(&syscall_reg, PTRACE_PEEKUSER, child_process_id);
+        status = get_syscall_number(&syscall_reg, PTRACE_PEEKUSER, child_process_id);
         if (status != EXIT_SUCCESS){
             return  status;
         }
-		print_syscall_(syscall_reg);
-		if (wait_for_syscall(child_process_id, false) != 0) {
+		if (continue_child_process_exection(child_process_id, false) != 0) {
 		    break;
 		}
-        ptrace_requested_data = ptrace(PTRACE_PEEKUSER, child_process_id, sizeof(long) * RAX);
-        if (ptrace_requested_data == -1) {
-            fprintf(stderr, "Error ejecutando ptrace. (Errno %d: %s)\n",
-                    errno, strerror(errno));
-            return EXIT_FAILURE;
+        status = get_syscall_value_returned(&syscall_reg, PTRACE_PEEKUSER, child_process_id);
+        if (status != EXIT_SUCCESS){
+            return  status;
         }
+        print_system_call(&syscall_reg);
 	}
 	return EXIT_SUCCESS;
 }
 
 // Public functions
 
+/*
+ * Create a new process (with fork). Child process executes the program
+ * to be traced and father process traces it.
+ */
 int system_call_tracer_execute(char **argv, bool pause){
 	pid_t fork_return = fork();
     if (fork_return == 0) {
-        return do_child(argv);
+        return execute_child_process(argv);
     } else if (fork_return == -1) {
         fprintf(stderr, "Error ejecutando fork. (Errno %d: %s)\n",
                 errno, strerror(errno));
         return EXIT_FAILURE;
     } else {
-        return do_trace(fork_return, pause);
+        return execute_parent_process(fork_return, pause);
     }
 }
