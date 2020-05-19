@@ -95,7 +95,7 @@ int get_system_call_return_args(system_call_data *syscall_reg,
     for (int i = 0; i < ARGS_QUANTITY; i++){
         errno = 0;
         current_arg_content = ptrace(request, child_process_id, sizeof(long) * arguments[i]);
-        if (errno == -1) {
+        if (errno != 0) {
             fprintf(stderr, "Error ejecutando ptrace al leer el argumento %d de syscall. (Errno %d: %s)\n",
                     i, errno, strerror(errno));
             return FAILURE;
@@ -116,7 +116,7 @@ int get_system_call_return_value(system_call_data *syscall_reg,
 
     errno = 0;
     reg_syscall_return_content = ptrace(request, child_process_id, sizeof(long) * REG_SYSCALL_RETURN);
-    if (errno == -1) {
+    if (errno != 0) {
         fprintf(stderr, "Error ejecutando ptrace al leer REG_SYSCALL_RETURN. (Errno %d: %s)\n",
                 errno, strerror(errno));
         return FAILURE;
@@ -135,7 +135,7 @@ int get_system_call_number(system_call_data *syscall_reg,
     errno = 0;
 
     reg_syscall_number_content = ptrace(request, child_process_id, sizeof(long) * REG_SYSCALL_NUMBER);
-    if (errno == -1) {
+    if (errno != 0) {
         fprintf(stderr, "Error ejecutando ptrace al leer REG_SYSCALL_NUMBER. (Errno %d: %s)\n",
                 errno, strerror(errno));
         return FAILURE;
