@@ -152,7 +152,12 @@ int get_system_call_number(system_call_data *syscall_reg,
  * Print information for the system call in syscall_reg argument
  */
 void print_system_call(system_call_data *syscall_reg) {
-    fprintf(stderr, "Syscall (%ld): %s\n"
+    if (syscall_reg->system_call_number >= SYSCALLS_QUANTITY){
+        fprintf(stderr, "Error recuperando la información del system call %d.\n",
+                syscall_reg->system_call_number);
+        return;
+    }
+    fprintf(stdout, "Syscall (%ld): %s\n"
                     "    Argumentos:\n",
             syscall_reg->system_call_number,
             syscalls_info[syscall_reg->system_call_number].system_call_name);
@@ -160,12 +165,12 @@ void print_system_call(system_call_data *syscall_reg) {
         if (strcmp(syscalls_info[syscall_reg->system_call_number].system_call_args[i], "") == 0){
             break;
         }
-        fprintf(stderr, "        Argumento %d: %ld (%s)\n",
+        fprintf(stdout, "        Argumento %d: %ld (%s)\n",
                 i,
                 syscall_reg->system_call_args[i],
                 syscalls_info[syscall_reg->system_call_number].system_call_args[i]);
     }
-    fprintf(stderr, "    Return value: %ld\n",
+    fprintf(stdout, "    Return value: %ld\n",
             syscall_reg->system_call_return_value);
 }
 
