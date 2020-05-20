@@ -181,8 +181,8 @@ int continue_child_process_execution(pid_t child_process_id, bool pause) {
  * Get system value args from last call number execute in
  * process child_process_id
  */
-int get_system_call_return_args(system_call_data *syscall_reg,
-                                enum __ptrace_request request, pid_t child_process_id){
+int get_system_call_args(system_call_data *syscall_reg,
+                         enum __ptrace_request request, pid_t child_process_id){
     int current_arg_content;
     for (int i = 0; i < ARGS_QUANTITY; i++){
         errno = 0;
@@ -282,12 +282,10 @@ int execute_parent_process(pid_t child_process_id, bool pause){
         }
         status = get_system_call_number(&syscall_reg, PTRACE_PEEKUSER, child_process_id);
         if (status == FAILURE){
-            printf("a\n");
             break;
         }
-        status = get_system_call_return_args(&syscall_reg, PTRACE_PEEKUSER, child_process_id);
+        status = get_system_call_args(&syscall_reg, PTRACE_PEEKUSER, child_process_id);
         if (status == FAILURE){
-            printf("b\n");
             break;
         }
 
