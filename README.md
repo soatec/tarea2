@@ -1,7 +1,7 @@
 # Tarea 2: Rastreador de "*System Calls*"
 
-El propósito de esta tarea es poner a ejecutar otro programa (llamado Prog), pasarle los argumentos seleccionados por 
-el usuario y rastrear todos los *system calls* utilizados por el programa Prog. El rastreador soporta las 
+El propósito de esta tarea es poner a ejecutar otro programa (llamado Prog), pasarle los argumentos seleccionados por
+el usuario y rastrear todos los *system calls* utilizados por el programa Prog. El rastreador soporta las
 arquitecturas x86_64 e i386.
 
 ## Uso
@@ -14,25 +14,29 @@ make
 ./build/rastreador [-v | -V] Prog [opciones de Prog]
 ```
 En donde,
- 
+
 * ***v*** desplegará un mensaje cada vez que detecte un *System Call* de Prog.
- 
-* ***V*** es idéntico a la opción -v, pero realiza una pausa hasta que el usuario presione cualquier tecla para 
+
+* ***V*** es idéntico a la opción -v, pero realiza una pausa hasta que el usuario presione cualquier tecla para
 continuar con la ejecución de Prog. Las pausas se realizan antes de ejecutar el *system call*.
 
 * ***Prog*** es el programa al que se le rastreará sus *system calls*.
 
 * ***opciones de Prog*** son los argumentos de Prog.
- 
+
 Es necesario que el usuario use solo una de las opciones -v o -V.
 
 Esta tarea incluye un programa sencillo para usarlo como prueba del rastreador de *System Calls*, pero cualquier otro
 programa se puede utilizar.
 
+Al final de la ejecución se muestra una tabla resumen con la cantidad de *System Calls* que fueron utilizados por Prog, similar a la siguiente:
+
+![Alt text](docs/resumen.png?raw=true "Title")
+
 ## Programa de prueba
 
-Este programa realiza el syscall write (`ssize_t write(int fd, const void *buf, size_t count)`). Escribe una cantidad 
-de veces determinada por el usuario en el *file descriptor* 1 (standard output) un *string* determinado por el 
+Este programa realiza el syscall write (`ssize_t write(int fd, const void *buf, size_t count)`). Escribe una cantidad
+de veces determinada por el usuario en el *file descriptor* 1 (standard output) un *string* determinado por el
 usuario (más un caracter de cambio de línea).
 
 1. En la raiz de la tarea, ejecute la regla make:
@@ -44,19 +48,19 @@ make
 ./build/test -i Iteraciones -c Contenido
 ```
 En donde,
- 
+
 * ***i*** es la cantidad de veces a escribir en stdout.
- 
+
 * ***c*** es el contenido a escribir en stdout.
 
 ## Ejemplo
 
-Se ejecuta el siguiente comando: 
+Se ejecuta el siguiente comando:
 ```
 ./build/rastreador -V ./build/test -i 10 -c "Hola, Mundo"
 ```
 
-Después de presionar cualquier tecla 5 veces, se puede observar la siguiente información 
+Después de presionar cualquier tecla 5 veces, se puede observar la siguiente información
 sobre los *system calls* del programa test:
 
 
@@ -68,7 +72,7 @@ la siguiente información:
 * Nombre: sys_write
 * Parámetro 1: fd es 1 (stdout).
 * Parámetro 2: buf es -303652769 que corresponde a la dirección 0xEDE6A05F.
-* Parámetro 2: count es 12 (el tamaño del string "Hola, mundo\n"). 
+* Parámetro 2: count es 12 (el tamaño del string "Hola, mundo\n").
 * Valor de retorno: el valor retornado es 12, que es la cantidad de *bytes* escrita con éxito.
 
 ![Alt text](docs/ejemplo_2.png?raw=true "Title")
